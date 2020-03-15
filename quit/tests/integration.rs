@@ -75,6 +75,16 @@ fn test_panic() {
 }
 
 #[test]
+fn test_return() {
+    #[quit::main]
+    fn main() -> Result<(), ()> {
+        Ok(())
+    }
+
+    let _ = main();
+}
+
+#[test]
 fn test_code_0() -> IoResult<()> {
     test_exit_code(0)
 }
