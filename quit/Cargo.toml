@@ -1,6 +1,6 @@
 [package]
 name = "quit"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["dylni"]
 edition = "2018"
 exclude = [".*", "/rustfmt.toml", "/tests"]
@@ -14,7 +14,7 @@ categories = ["command-line-interface", "rust-patterns"]
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-quit_macros = { version = "0.1.0", path = "../quit_macros" }
+quit_macros = { version = "0.2.0", path = "../quit_macros" }
 
 [dev-dependencies]
 lazy_static = "1.4"
