@@ -1,0 +1,20 @@
+[package]
+name = "quit"
+version = "0.1.0"
+authors = ["dylni"]
+edition = "2018"
+exclude = [".*", "/rustfmt.toml", "/tests"]
+description = """
+Exit cleanly with an exit code
+"""
+repository = "https://github.com/dylni/quit"
+readme = "../README.md"
+keywords = ["exit", "code", "status", "die", "terminate"]
+categories = ["command-line-interface", "rust-patterns"]
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+quit_macros = { version = "0.1.0", path = "../quit_macros" }
+
+[dev-dependencies]
+lazy_static = "1.4"

@@ -1,0 +1,19 @@
+[package]
+name = "quit_macros"
+version = "0.1.0"
+authors = ["dylni"]
+edition = "2018"
+exclude = [".*", "/rustfmt.toml", "/tests"]
+description = """
+Procedural macros used by Quit
+"""
+repository = "https://github.com/dylni/quit"
+readme = "description.md"
+license = "MIT OR Apache-2.0"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+quote = "1.0"
+syn = { version = "1.0", features = ["full"] }
