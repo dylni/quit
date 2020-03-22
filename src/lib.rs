@@ -59,6 +59,10 @@ pub struct _ExitCode(pub i32);
 /// behavior. Because panics are used internally to unwind the stack, the exit
 /// code cannot be passed safely. [`exit`] should be used instead in that case.
 ///
+/// This function will not behave as expected unless [`main`] is attached to
+/// the main function. Other implementation notes are mentioned in [the
+/// module-level documentation][implementation].
+///
 /// # Examples
 ///
 /// ```should_panic
@@ -69,6 +73,8 @@ pub struct _ExitCode(pub i32);
 /// ```
 ///
 /// [`exit`]: https://doc.rust-lang.org/std/process/fn.exit.html
+/// [`main`]: attr.main.html
+/// [implementation]: index.html#implementation
 #[inline]
 pub fn with_code(exit_code: i32) -> ! {
     panic::resume_unwind(Box::new(_ExitCode(exit_code)));
