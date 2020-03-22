@@ -8,13 +8,16 @@ description = """
 Exit cleanly with an exit code
 """
 repository = "https://github.com/dylni/quit"
-readme = "../README.md"
+readme = "README.md"
 keywords = ["exit", "code", "status", "die", "terminate"]
 categories = ["command-line-interface", "rust-patterns"]
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-quit_macros = { version = "0.2.0", path = "../quit_macros" }
+quit_macros = { version = "0.2.0", path = "macros" }
 
 [dev-dependencies]
 lazy_static = "1.4"
+
+[workspace]
+members = ["macros"]

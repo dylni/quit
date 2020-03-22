@@ -8,3 +8,5 @@ publish = false
 [dependencies]
 lazy_static = "1.4"
 quit = { version = "*", path = ".." }
+
+[workspace]
