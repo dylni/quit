@@ -48,7 +48,7 @@ use std::panic;
 #[cfg(not(test))]
 pub use quit_macros::main;
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone)]
 #[doc(hidden)]
 #[must_use]
 pub struct _ExitCode(pub i32);

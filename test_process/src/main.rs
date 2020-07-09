@@ -19,14 +19,14 @@ fn exit() {
 
 #[quit::main]
 fn main() {
-    let dropped = Dropped {};
+    let dropped = Dropped();
 
     exit();
 
     println!("unreachable");
     drop(dropped);
 
-    struct Dropped {}
+    struct Dropped();
 
     impl Drop for Dropped {
         fn drop(&mut self) {

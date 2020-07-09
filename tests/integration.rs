@@ -1,4 +1,4 @@
-use std::io::Result as IoResult;
+use std::io;
 use std::process::Command;
 use std::process::ExitStatus;
 use std::process::Stdio;
@@ -6,21 +6,17 @@ use std::process::Stdio;
 use lazy_static::lazy_static;
 
 lazy_static! {
-    static ref TEST_PROCESS_BUILD: IoResult<ExitStatus> = {
+    static ref TEST_PROCESS_BUILD: io::Result<ExitStatus> = {
         let mut command = Command::new("cargo");
-        command.arg("build");
+        let _ = command.arg("build");
         if cfg!(not(debug_assertions)) {
-            command.arg("--release");
+            let _ = command.arg("--release");
         }
-        command
-            .arg("--quiet")
-            .current_dir("test_process")
-            .spawn()
-            .and_then(|mut x| x.wait())
+        command.arg("--quiet").current_dir("test_process").status()
     };
 }
 
-fn test_exit_code(exit_code: i32) -> IoResult<()> {
+fn test_exit_code(exit_code: i32) -> io::Result<()> {
     assert!(TEST_PROCESS_BUILD
         .as_ref()
         .expect("failed test process build")
@@ -35,9 +31,8 @@ fn test_exit_code(exit_code: i32) -> IoResult<()> {
         },
     ))
     .arg(exit_code.to_string())
-    .stdout(Stdio::piped())
-    .spawn()?
-    .wait_with_output()?;
+    .stderr(Stdio::inherit())
+    .output()?;
 
     assert_eq!(Some(exit_code), output.status.code());
     assert_eq!(b"dropped\n", output.stdout.as_slice());
@@ -57,7 +52,9 @@ fn test_empty() {
 fn test_success() {
     #[quit::main]
     fn main() {
-        println!("hello world");
+        if !"hello world".contains('h') {
+            panic!("hello world");
+        }
     }
 
     main();
@@ -81,25 +78,25 @@ fn test_return() {
         Ok(())
     }
 
-    let _ = main();
+    assert_eq!(Ok(()), main());
 }
 
 #[test]
-fn test_code_0() -> IoResult<()> {
+fn test_code_0() -> io::Result<()> {
     test_exit_code(0)
 }
 
 #[test]
-fn test_code_1() -> IoResult<()> {
+fn test_code_1() -> io::Result<()> {
     test_exit_code(1)
 }
 
 #[test]
-fn test_code_2() -> IoResult<()> {
+fn test_code_2() -> io::Result<()> {
     test_exit_code(2)
 }
 
 #[test]
-fn test_code_10() -> IoResult<()> {
+fn test_code_10() -> io::Result<()> {
     test_exit_code(10)
 }

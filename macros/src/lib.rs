@@ -20,7 +20,6 @@ use quote::quote;
 use quote::ToTokens;
 
 use syn::parse_macro_input;
-use syn::Error as SynError;
 use syn::ItemFn;
 
 /// Modifies the main function to exit with the code passed to [`with_code`].
@@ -40,9 +39,12 @@ use syn::ItemFn;
 #[proc_macro_attribute]
 pub fn main(args: TokenStream, item: TokenStream) -> TokenStream {
     if let Some(arg) = args.into_iter().next() {
-        return SynError::new(arg.span().into(), "arguments are not accepted")
-            .to_compile_error()
-            .into();
+        return syn::Error::new(
+            arg.span().into(),
+            "arguments are not accepted",
+        )
+        .to_compile_error()
+        .into();
     }
 
     let input = parse_macro_input!(item as ItemFn);
@@ -82,7 +84,7 @@ pub fn main(args: TokenStream, item: TokenStream) -> TokenStream {
         TMessage: Display,
         TTokens: ToTokens,
     {
-        SynError::new_spanned(tokens, message)
+        syn::Error::new_spanned(tokens, message)
             .to_compile_error()
             .into()
     }
