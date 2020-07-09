@@ -9,18 +9,162 @@
 #![forbid(unsafe_code)]
 #![warn(unused_results)]
 
-#[allow(unused_extern_crates)]
 extern crate proc_macro;
 
-use std::fmt::Display;
+use std::iter;
+use std::iter::FromIterator;
+use std::result;
 
+use proc_macro::Delimiter;
+use proc_macro::Group;
+use proc_macro::Ident;
+use proc_macro::Literal;
+use proc_macro::Punct;
+use proc_macro::Spacing;
+use proc_macro::Span;
 use proc_macro::TokenStream;
+use proc_macro::TokenTree;
 
-use quote::quote;
-use quote::ToTokens;
+trait TokenStreamExt {
+    fn push<TToken>(&mut self, token: TToken)
+    where
+        TToken: Into<TokenTree>;
+}
 
-use syn::parse_macro_input;
-use syn::ItemFn;
+impl TokenStreamExt for TokenStream {
+    fn push<TToken>(&mut self, token: TToken)
+    where
+        TToken: Into<TokenTree>,
+    {
+        self.extend(iter::once(token.into()))
+    }
+}
+
+fn path(module: &str, name: &str) -> impl Iterator<Item = TokenTree> {
+    vec![
+        Punct::new(':', Spacing::Joint).into(),
+        Punct::new(':', Spacing::Alone).into(),
+        Ident::new(module, Span::call_site()).into(),
+        Punct::new(':', Spacing::Joint).into(),
+        Punct::new(':', Spacing::Alone).into(),
+        Ident::new(name, Span::call_site()).into(),
+    ]
+    .into_iter()
+}
+
+// https://docs.rs/syn/1.0/syn/struct.Error.html
+#[derive(Copy, Clone)]
+struct Error {
+    start: Span,
+    end: Span,
+    message: &'static str,
+}
+
+impl Error {
+    const fn new(span: Span, message: &'static str) -> Self {
+        Self {
+            start: span,
+            end: span,
+            message,
+        }
+    }
+
+    fn new_spanned<TTokens>(tokens: TTokens, message: &'static str) -> Self
+    where
+        TTokens: Into<TokenStream>,
+    {
+        let mut tokens = tokens.into().into_iter();
+        let start = tokens
+            .next()
+            .map(|x| x.span())
+            .unwrap_or_else(Span::call_site);
+        Self {
+            start,
+            end: tokens.last().map(|x| x.span()).unwrap_or(start),
+            message,
+        }
+    }
+
+    fn to_compile_error(&self) -> TokenStream {
+        let mut result = TokenStream::from_iter(
+            path("std", "compile_error")
+                .chain(iter::once(Punct::new('!', Spacing::Alone).into()))
+                .map(|mut token| {
+                    token.set_span(self.start);
+                    token
+                }),
+        );
+
+        let mut literal = Literal::string(self.message);
+        literal.set_span(self.end);
+
+        let mut group =
+            Group::new(Delimiter::Brace, TokenTree::Literal(literal).into());
+        group.set_span(self.end);
+
+        result.push(group);
+        result
+    }
+}
+
+// https://docs.rs/syn/1.0/syn/type.Result.html
+type Result<TOk> = result::Result<TOk, Error>;
+
+fn parse_main_fn(tokens: TokenStream) -> Result<(TokenStream, TokenTree)> {
+    let mut tokens = tokens.into_iter();
+    let mut signature = TokenStream::new();
+
+    loop {
+        let token = tokens.next().ok_or_else(|| {
+            Error::new(
+                Span::call_site(),
+                "`quit::main` can only be attached to functions",
+            )
+        })?;
+
+        match &token {
+            TokenTree::Ident(keyword) if keyword.to_string() == "fn" => {
+                signature.push(token);
+                break;
+            }
+            _ => {}
+        }
+        signature.push(token);
+    }
+
+    if let Some(name) = tokens.next() {
+        if name.to_string() != "main" {
+            return Err(Error::new_spanned(
+                name,
+                "`quit::main` can only be attached to `main`",
+            ));
+        }
+        signature.push(name);
+    }
+
+    let body = loop {
+        let token = tokens.next().ok_or_else(|| {
+            Error::new(
+                Span::call_site(),
+                "`quit::main` can only be attached to functions with a body",
+            )
+        })?;
+
+        match &token {
+            TokenTree::Group(group)
+                if group.delimiter() == Delimiter::Brace =>
+            {
+                break token;
+            }
+            _ => {}
+        }
+        signature.push(token);
+    };
+
+    assert!(tokens.next().is_none());
+
+    Ok((signature, body))
+}
 
 /// Modifies the main function to exit with the code passed to [`with_code`].
 ///
@@ -38,54 +182,28 @@ use syn::ItemFn;
 #[inline]
 #[proc_macro_attribute]
 pub fn main(args: TokenStream, item: TokenStream) -> TokenStream {
-    if let Some(arg) = args.into_iter().next() {
-        return syn::Error::new(
-            arg.span().into(),
-            "arguments are not accepted",
-        )
-        .to_compile_error()
-        .into();
+    if !args.is_empty() {
+        return Error::new_spanned(args, "arguments are not accepted")
+            .to_compile_error();
     }
 
-    let input = parse_macro_input!(item as ItemFn);
-    let signature = &input.sig;
+    let (mut result, body) = match parse_main_fn(item) {
+        Ok(result) => result,
+        Err(error) => return error.to_compile_error(),
+    };
 
-    let name = &signature.ident;
-    if name != "main" {
-        return error(name, "`quit::main` can only be attached to `main`");
-    }
+    let mut args = TokenStream::from_iter(vec![
+        TokenTree::Punct(Punct::new(
+            '|',
+            Spacing::Alone,
+        ));
+        2
+    ]);
+    args.push(body);
 
-    let attrs = &input.attrs;
-    let visibility = &input.vis;
-    let body = &input.block;
-    return quote! {
-        #(#attrs)*
-        #visibility #signature {
-            match ::std::panic::catch_unwind(|| { #body }) {
-                Ok(result) => result,
-                Err(payload) => {
-                    if let Some(&::quit::_ExitCode(exit_code)) =
-                        payload.downcast_ref()
-                    {
-                        ::std::process::exit(exit_code);
-                    };
-                    ::std::panic::resume_unwind(payload);
-                },
-            }
-        }
-    }
-    .into();
+    let mut body = TokenStream::from_iter(path("quit", "_run"));
+    body.push(Group::new(Delimiter::Parenthesis, args));
 
-    fn error<TMessage, TTokens>(
-        tokens: TTokens,
-        message: TMessage,
-    ) -> TokenStream
-    where
-        TMessage: Display,
-        TTokens: ToTokens,
-    {
-        syn::Error::new_spanned(tokens, message)
-            .to_compile_error()
-            .into()
-    }
+    result.push(Group::new(Delimiter::Brace, body));
+    result
 }

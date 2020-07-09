@@ -43,15 +43,30 @@
 #![warn(unused_results)]
 
 use std::panic;
+use std::panic::UnwindSafe;
+use std::process;
 
 // https://github.com/rust-lang/rust/issues/62127
 #[cfg(not(test))]
 pub use quit_macros::main;
 
 #[derive(Copy, Clone)]
-#[doc(hidden)]
 #[must_use]
-pub struct _ExitCode(pub i32);
+struct ExitCode(i32);
+
+#[doc(hidden)]
+#[inline]
+pub fn _run<TMainFn, TReturn>(main_fn: TMainFn) -> TReturn
+where
+    TMainFn: FnOnce() -> TReturn + UnwindSafe,
+{
+    panic::catch_unwind(main_fn).unwrap_or_else(|payload| {
+        if let Some(&ExitCode(exit_code)) = payload.downcast_ref() {
+            process::exit(exit_code);
+        }
+        panic::resume_unwind(payload);
+    })
+}
 
 /// Cleanly exits the program with an exit code.
 ///
@@ -77,5 +92,5 @@ pub struct _ExitCode(pub i32);
 /// [implementation]: index.html#implementation
 #[inline]
 pub fn with_code(exit_code: i32) -> ! {
-    panic::resume_unwind(Box::new(_ExitCode(exit_code)));
+    panic::resume_unwind(Box::new(ExitCode(exit_code)));
 }

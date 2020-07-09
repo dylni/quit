@@ -1,4 +1,5 @@
 use std::io;
+use std::mem::ManuallyDrop;
 use std::process::Command;
 use std::process::ExitStatus;
 use std::process::Stdio;
@@ -99,4 +100,24 @@ fn test_code_2() -> io::Result<()> {
 #[test]
 fn test_code_10() -> io::Result<()> {
     test_exit_code(10)
+}
+
+#[test]
+fn test_complex_signature() {
+    mod main {
+        use std::mem::ManuallyDrop;
+
+        #[quit::main]
+        #[quit::main]
+        pub(super) unsafe extern "C" fn main<T: Copy>() -> ManuallyDrop<()>
+        where
+            T: Clone,
+        {
+            ManuallyDrop::new(())
+        }
+    }
+
+    unsafe {
+        ManuallyDrop::drop(&mut main::main::<()>());
+    }
 }
