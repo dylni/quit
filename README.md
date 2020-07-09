@@ -16,7 +16,7 @@ Add the following lines to your "Cargo.toml" file:
 
 ```toml
 [dependencies]
-quit = "1.0"
+quit = "1.1"
 ```
 
 See the [documentation] for available functionality and examples.
