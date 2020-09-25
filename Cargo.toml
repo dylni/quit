@@ -1,6 +1,6 @@
 [package]
 name = "quit"
-version = "1.1.1"
+version = "1.1.2"
 authors = ["dylni"]
 edition = "2018"
 exclude = [".*", "/rustfmt.toml", "/tests"]
@@ -20,7 +20,7 @@ rustdoc-args = [
 ]
 
 [dependencies]
-quit_macros = { version = "=1.1.1", path = "macros" }
+quit_macros = { version = "=1.1.2", path = "macros" }
 
 [dev-dependencies]
 lazy_static = "1.4"
