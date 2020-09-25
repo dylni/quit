@@ -2,9 +2,9 @@
 //! without the drawbacks of [`exit`]. Destructors will be called as usual, and
 //! the stack will be unwound to the main function.
 //!
-//! It is always required to attach [`main`] to the main function. Then,
-//! [`with_code`] can be called from almost anywhere in the program.
-//! Restrictions are noted in the documentation for that function.
+//! It is always required to attach [`#[main]`][attribute] to the main
+//! function. Then, [`with_code`] can be called from almost anywhere in the
+//! program. Restrictions are noted in the documentation for that function.
 //!
 //! # Implementation
 //!
@@ -34,8 +34,8 @@
 //! }
 //! ```
 //!
+//! [attribute]: attr.main.html
 //! [`exit`]: https://doc.rust-lang.org/std/process/fn.exit.html
-//! [`main`]: attr.main.html
 //! [`with_code`]: fn.with_code.html
 
 #![doc(html_root_url = "https://docs.rs/quit/*")]
@@ -47,6 +47,19 @@ use std::panic::UnwindSafe;
 use std::process;
 
 // https://github.com/rust-lang/rust/issues/62127
+/// Modifies the main function to exit with the code passed to [`with_code`].
+///
+/// This attribute should always be attached to the main function. Otherwise,
+/// the exit code of the program may be incorrect.
+///
+/// # Examples
+///
+/// ```
+/// #[quit::main]
+/// fn main() {}
+/// ```
+///
+/// [`with_code`]: fn.with_code.html
 #[cfg(not(test))]
 pub use quit_macros::main;
 
@@ -56,7 +69,7 @@ struct ExitCode(i32);
 
 #[doc(hidden)]
 #[inline]
-pub fn _run<TMainFn, TReturn>(main_fn: TMainFn) -> TReturn
+pub fn __run<TMainFn, TReturn>(main_fn: TMainFn) -> TReturn
 where
     TMainFn: FnOnce() -> TReturn + UnwindSafe,
 {
@@ -74,9 +87,9 @@ where
 /// behavior. Because panics are used internally to unwind the stack, the exit
 /// code cannot be passed safely. [`exit`] should be used instead in that case.
 ///
-/// This function will not behave as expected unless [`main`] is attached to
-/// the main function. Other implementation notes are mentioned in [the
-/// module-level documentation][implementation].
+/// This function will not behave as expected unless [`#[main]`][attribute] is
+/// attached to the main function. Other implementation notes are mentioned in
+/// [the module-level documentation][implementation].
 ///
 /// # Examples
 ///
@@ -87,8 +100,8 @@ where
 /// # exit();
 /// ```
 ///
+/// [attribute]: attr.main.html
 /// [`exit`]: https://doc.rust-lang.org/std/process/fn.exit.html
-/// [`main`]: attr.main.html
 /// [implementation]: index.html#implementation
 #[inline]
 pub fn with_code(exit_code: i32) -> ! {

@@ -1,9 +1,9 @@
-//! This crate provides procedural macros for [Quit].
+//! This crate provides procedural macros for [quit].
 //!
 //! **Do not add this crate as a dependency.** It has no backward compatibility
-//! guarantees. Use the macros re-exported from [Quit] instead.
+//! guarantees. Use the macros re-exported from [quit] instead.
 //!
-//! [Quit]: https://crates.io/crates/quit
+//! [quit]: https://crates.io/crates/quit
 
 #![doc(html_root_url = "https://docs.rs/quit_macros/*")]
 #![forbid(unsafe_code)]
@@ -86,14 +86,13 @@ impl Error {
     }
 
     fn to_compile_error(&self) -> TokenStream {
-        let mut result = TokenStream::from_iter(
-            path("std", "compile_error")
-                .chain(iter::once(Punct::new('!', Spacing::Alone).into()))
-                .map(|mut token| {
-                    token.set_span(self.start);
-                    token
-                }),
-        );
+        let mut result: TokenStream = path("std", "compile_error")
+            .chain(iter::once(Punct::new('!', Spacing::Alone).into()))
+            .map(|mut token| {
+                token.set_span(self.start);
+                token
+            })
+            .collect();
 
         let mut literal = Literal::string(self.message);
         literal.set_span(self.end);
@@ -118,7 +117,7 @@ fn parse_main_fn(tokens: TokenStream) -> Result<(TokenStream, TokenTree)> {
         let token = tokens.next().ok_or_else(|| {
             Error::new(
                 Span::call_site(),
-                "`quit::main` can only be attached to functions",
+                "`#[quit::main]` can only be attached to functions",
             )
         })?;
 
@@ -136,7 +135,7 @@ fn parse_main_fn(tokens: TokenStream) -> Result<(TokenStream, TokenTree)> {
         if name.to_string() != "main" {
             return Err(Error::new_spanned(
                 name,
-                "`quit::main` can only be attached to `main`",
+                "`#[quit::main]` can only be attached to `main`",
             ));
         }
         signature.push(name);
@@ -146,7 +145,8 @@ fn parse_main_fn(tokens: TokenStream) -> Result<(TokenStream, TokenTree)> {
         let token = tokens.next().ok_or_else(|| {
             Error::new(
                 Span::call_site(),
-                "`quit::main` can only be attached to functions with a body",
+                "`#[quit::main]` can only be attached to functions with a \
+                body",
             )
         })?;
 
@@ -166,19 +166,6 @@ fn parse_main_fn(tokens: TokenStream) -> Result<(TokenStream, TokenTree)> {
     Ok((signature, body))
 }
 
-/// Modifies the main function to exit with the code passed to [`with_code`].
-///
-/// This attribute should always be attached to the main function. Otherwise,
-/// the exit code of the program may be incorrect.
-///
-/// # Examples
-///
-/// ```
-/// #[quit::main]
-/// fn main() {}
-/// ```
-///
-/// [`with_code`]: fn.with_code.html
 #[inline]
 #[proc_macro_attribute]
 pub fn main(args: TokenStream, item: TokenStream) -> TokenStream {
@@ -201,7 +188,7 @@ pub fn main(args: TokenStream, item: TokenStream) -> TokenStream {
     ]);
     args.push(body);
 
-    let mut body = TokenStream::from_iter(path("quit", "_run"));
+    let mut body: TokenStream = path("quit", "__run").collect();
     body.push(Group::new(Delimiter::Parenthesis, args));
 
     result.push(Group::new(Delimiter::Brace, body));

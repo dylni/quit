@@ -5,7 +5,7 @@ authors = ["dylni"]
 edition = "2018"
 exclude = [".*", "/rustfmt.toml", "/tests"]
 description = """
-Procedural macros used by Quit
+Procedural macros used by crate quit
 """
 repository = "https://github.com/dylni/quit"
 readme = "description.md"
