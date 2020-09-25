@@ -13,6 +13,12 @@ keywords = ["exit", "code", "status", "die", "terminate"]
 categories = ["command-line-interface", "rust-patterns"]
 license = "MIT OR Apache-2.0"
 
+[package.metadata.docs.rs]
+rustdoc-args = [
+    "--extern-html-root-url", "std=https://doc.rust-lang.org",
+    "-Z unstable-options",
+]
+
 [dependencies]
 quit_macros = { version = "=1.1.0", path = "macros" }
 

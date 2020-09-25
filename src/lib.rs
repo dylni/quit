@@ -1,6 +1,6 @@
 //! This crate allows cleanly exiting a program using a custom exit code,
-//! without the drawbacks of [`exit`]. Destructors will be called as usual, and
-//! the stack will be unwound to the main function.
+//! without the drawbacks of [`process::exit`]. Destructors will be called as
+//! usual, and the stack will be unwound to the main function.
 //!
 //! It is always required to attach [`#[main]`][attribute] to the main
 //! function. Then, [`with_code`] can be called from almost anywhere in the
@@ -34,9 +34,7 @@
 //! }
 //! ```
 //!
-//! [attribute]: attr.main.html
-//! [`exit`]: https://doc.rust-lang.org/std/process/fn.exit.html
-//! [`with_code`]: fn.with_code.html
+//! [attribute]: main
 
 #![doc(html_root_url = "https://docs.rs/quit/*")]
 #![forbid(unsafe_code)]
@@ -58,8 +56,6 @@ use std::process;
 /// #[quit::main]
 /// fn main() {}
 /// ```
-///
-/// [`with_code`]: fn.with_code.html
 #[cfg(not(test))]
 pub use quit_macros::main;
 
@@ -85,7 +81,8 @@ where
 ///
 /// Calling this function from within an FFI boundary invokes undefined
 /// behavior. Because panics are used internally to unwind the stack, the exit
-/// code cannot be passed safely. [`exit`] should be used instead in that case.
+/// code cannot be passed safely. [`process::exit`] should be used instead in
+/// that case.
 ///
 /// This function will not behave as expected unless [`#[main]`][attribute] is
 /// attached to the main function. Other implementation notes are mentioned in
@@ -100,8 +97,7 @@ where
 /// # exit();
 /// ```
 ///
-/// [attribute]: attr.main.html
-/// [`exit`]: https://doc.rust-lang.org/std/process/fn.exit.html
+/// [attribute]: main
 /// [implementation]: index.html#implementation
 #[inline]
 pub fn with_code(exit_code: i32) -> ! {
