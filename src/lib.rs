@@ -56,6 +56,8 @@ use std::process;
 /// #[quit::main]
 /// fn main() {}
 /// ```
+///
+/// [`with_code`]: fn.with_code.html
 #[cfg(not(test))]
 pub use quit_macros::main;
 
