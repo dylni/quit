@@ -16,7 +16,7 @@ license = "MIT OR Apache-2.0"
 [package.metadata.docs.rs]
 rustdoc-args = [
     "--extern-html-root-url", "std=https://doc.rust-lang.org",
-    "-Z unstable-options",
+    "-Zunstable-options",
 ]
 
 [dependencies]
