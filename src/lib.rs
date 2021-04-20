@@ -36,7 +36,6 @@
 //!
 //! [attribute]: main
 
-#![doc(html_root_url = "https://docs.rs/quit/*")]
 #![forbid(unsafe_code)]
 #![warn(unused_results)]
 
@@ -56,8 +55,6 @@ use std::process;
 /// #[quit::main]
 /// fn main() {}
 /// ```
-///
-/// [`with_code`]: fn.with_code.html
 #[cfg(not(test))]
 pub use quit_macros::main;
 
@@ -100,7 +97,7 @@ where
 /// ```
 ///
 /// [attribute]: main
-/// [implementation]: index.html#implementation
+/// [implementation]: self#implementation
 #[inline]
 pub fn with_code(exit_code: i32) -> ! {
     panic::resume_unwind(Box::new(ExitCode(exit_code)));

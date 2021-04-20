@@ -36,7 +36,7 @@ fn test_exit_code(exit_code: i32) -> io::Result<()> {
     .output()?;
 
     assert_eq!(Some(exit_code), output.status.code());
-    assert_eq!(b"dropped\n", output.stdout.as_slice());
+    assert_eq!(b"dropped\n", &*output.stdout);
 
     Ok(())
 }

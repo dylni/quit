@@ -5,7 +5,6 @@
 //!
 //! [quit]: https://crates.io/crates/quit
 
-#![doc(html_root_url = "https://docs.rs/quit_macros/*")]
 #![forbid(unsafe_code)]
 #![warn(unused_results)]
 
