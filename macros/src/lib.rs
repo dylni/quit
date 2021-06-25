@@ -84,7 +84,7 @@ impl Error {
         }
     }
 
-    fn to_compile_error(&self) -> TokenStream {
+    fn to_compile_error(self) -> TokenStream {
         let mut result: TokenStream = path("std", "compile_error")
             .chain(iter::once(Punct::new('!', Spacing::Alone).into()))
             .map(|mut token| {
