@@ -12,7 +12,7 @@ repository = "https://github.com/dylni/quit"
 license = "MIT OR Apache-2.0"
 keywords = ["exit", "code", "status", "die", "terminate"]
 categories = ["command-line-interface", "rust-patterns"]
-exclude = [".*", "/rustfmt.toml", "/tests"]
+exclude = [".*", "/rustfmt.toml", "/src/bin", "/tests"]
 
 [dependencies]
 quit_macros = { version = "=1.1.4", path = "macros" }

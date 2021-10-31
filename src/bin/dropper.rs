@@ -1,30 +1,25 @@
 use std::env;
 
-use lazy_static::lazy_static;
+#[inline(never)]
+fn exit(exit_code: i32) -> ! {
+    quit::with_code(exit_code);
+}
 
-lazy_static! {
-    static ref EXIT_CODE: i32 = env::args_os()
+#[allow(unreachable_code)]
+#[quit::main]
+fn main() {
+    let _dropped = Dropped();
+
+    let exit_code = env::args_os()
         .nth(1)
         .expect("missing argument")
         .into_string()
         .expect("invalid argument")
         .parse()
         .expect("invalid exit code");
-}
-
-#[inline(never)]
-fn exit() {
-    quit::with_code(*EXIT_CODE);
-}
-
-#[quit::main]
-fn main() {
-    let dropped = Dropped();
-
-    exit();
+    exit(exit_code);
 
     println!("unreachable");
-    drop(dropped);
 
     struct Dropped();
 
