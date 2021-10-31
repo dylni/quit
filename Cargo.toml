@@ -3,15 +3,16 @@ name = "quit"
 version = "1.1.4"
 authors = ["dylni"]
 edition = "2018"
-exclude = [".*", "/rustfmt.toml", "/tests"]
+rust-version = "1.48.0"
 description = """
 Exit cleanly with an exit code
 """
-repository = "https://github.com/dylni/quit"
 readme = "README.md"
+repository = "https://github.com/dylni/quit"
+license = "MIT OR Apache-2.0"
 keywords = ["exit", "code", "status", "die", "terminate"]
 categories = ["command-line-interface", "rust-patterns"]
-license = "MIT OR Apache-2.0"
+exclude = [".*", "/rustfmt.toml", "/tests"]
 
 [dependencies]
 quit_macros = { version = "=1.1.4", path = "macros" }

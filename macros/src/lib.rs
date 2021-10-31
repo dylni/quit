@@ -8,8 +8,6 @@
 #![forbid(unsafe_code)]
 #![warn(unused_results)]
 
-extern crate proc_macro;
-
 use std::iter;
 use std::iter::FromIterator;
 use std::result;
@@ -120,14 +118,12 @@ fn parse_main_fn(tokens: TokenStream) -> Result<(TokenStream, TokenTree)> {
             )
         })?;
 
-        match &token {
-            TokenTree::Ident(keyword) if keyword.to_string() == "fn" => {
-                signature.push(token);
-                break;
-            }
-            _ => {}
-        }
+        let found =
+            matches!(&token, TokenTree::Ident(x) if x.to_string() == "fn");
         signature.push(token);
+        if found {
+            break;
+        }
     }
 
     if let Some(name) = tokens.next() {
@@ -149,13 +145,11 @@ fn parse_main_fn(tokens: TokenStream) -> Result<(TokenStream, TokenTree)> {
             )
         })?;
 
-        match &token {
-            TokenTree::Group(group)
-                if group.delimiter() == Delimiter::Brace =>
-            {
-                break token;
-            }
-            _ => {}
+        if matches!(
+            &token,
+            TokenTree::Group(x) if x.delimiter() == Delimiter::Brace,
+        ) {
+            break token;
         }
         signature.push(token);
     };

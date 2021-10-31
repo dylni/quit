@@ -43,7 +43,6 @@ use std::panic;
 use std::panic::UnwindSafe;
 use std::process;
 
-// https://github.com/rust-lang/rust/issues/62127
 /// Modifies the main function to exit with the code passed to [`with_code`].
 ///
 /// This attribute should always be attached to the main function. Otherwise,
@@ -55,7 +54,6 @@ use std::process;
 /// #[quit::main]
 /// fn main() {}
 /// ```
-#[cfg(not(test))]
 pub use quit_macros::main;
 
 #[derive(Copy, Clone)]
