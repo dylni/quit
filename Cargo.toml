@@ -17,8 +17,5 @@ exclude = [".*", "/rustfmt.toml", "/src/bin", "/tests"]
 [dependencies]
 quit_macros = { version = "=1.1.4", path = "macros" }
 
-[dev-dependencies]
-lazy_static = "1.4"
-
 [workspace]
 members = ["macros"]
