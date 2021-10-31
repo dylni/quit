@@ -35,7 +35,7 @@ impl TokenStreamExt for TokenStream {
     where
         TToken: Into<TokenTree>,
     {
-        self.extend(iter::once(token.into()))
+        self.extend(iter::once(token.into()));
     }
 }
 
