@@ -11,34 +11,19 @@ on:
 jobs:
   build:
     runs-on: ${{ matrix.platform }}
-    env:
-      RUSTFLAGS: -Dwarnings
     steps:
-    - uses: actions/checkout@v1
-      with:
-        fetch-depth: 10
-    - run: cargo install cargo-hack
-    - run: cargo hack clippy --feature-powerset --optional-deps
-    - run: cargo hack clippy --feature-powerset --optional-deps --tests
-    - run: cargo fmt -- --check
-    timeout-minutes: 5
+    - uses: dylni/build-actions/build@master
+    timeout-minutes: 10
     strategy:
       matrix:
         platform: [ubuntu-latest, windows-latest]
   test:
     needs: [build]
     runs-on: ${{ matrix.platform }}
-    env:
-      RUSTFLAGS: -Dwarnings
     steps:
-    - uses: actions/checkout@v1
+    - uses: dylni/build-actions/test@master
       with:
-        fetch-depth: 10
-    - run: rustup install ${{ matrix.version }}
-    - run: rustup default ${{ matrix.version }}
-    - run: cargo test --no-default-features
-    - run: cargo test --all-features
-    - run: cargo test --all-features --release
+        version: ${{ matrix.version }}
     timeout-minutes: 10
     strategy:
       matrix:
