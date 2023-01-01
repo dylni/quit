@@ -1,8 +1,8 @@
 # Quit
 
 This crate allows cleanly exiting a program using a custom exit code, without
-the drawbacks of [`exit`]. Destructors will be called as usual, and the stack
-will be unwound to the main function.
+the drawbacks of [`process::exit`]. Destructors will be called as usual, and
+the stack will be unwound to the main function.
 
 It is always required to attach [`#[main]`][attribute] to the main function.
 Then, [`with_code`] can be called from almost anywhere in the program.
@@ -46,6 +46,6 @@ in this crate, as defined in [LICENSE-APACHE], shall be licensed according to
 [attribute]: https://docs.rs/quit/*/quit/attr.main.html
 [COPYRIGHT]: https://github.com/dylni/quit/blob/master/COPYRIGHT
 [documentation]: https://docs.rs/quit
-[`exit`]: https://doc.rust-lang.org/std/process/fn.exit.html
+[`process::exit`]: https://doc.rust-lang.org/std/process/fn.exit.html
 [LICENSE-APACHE]: https://github.com/dylni/quit/blob/master/LICENSE-APACHE
 [`with_code`]: https://docs.rs/quit/*/quit/fn.with_code.html

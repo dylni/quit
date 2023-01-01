@@ -23,15 +23,15 @@ use proc_macro::TokenStream;
 use proc_macro::TokenTree;
 
 trait TokenStreamExt {
-    fn push<TToken>(&mut self, token: TToken)
+    fn push<T>(&mut self, token: T)
     where
-        TToken: Into<TokenTree>;
+        T: Into<TokenTree>;
 }
 
 impl TokenStreamExt for TokenStream {
-    fn push<TToken>(&mut self, token: TToken)
+    fn push<T>(&mut self, token: T)
     where
-        TToken: Into<TokenTree>,
+        T: Into<TokenTree>,
     {
         self.extend(iter::once(token.into()));
     }
@@ -66,9 +66,9 @@ impl Error {
         }
     }
 
-    fn new_spanned<TTokens>(tokens: TTokens, message: &'static str) -> Self
+    fn new_spanned<T>(tokens: T, message: &'static str) -> Self
     where
-        TTokens: Into<TokenStream>,
+        T: Into<TokenStream>,
     {
         let mut tokens = tokens.into().into_iter();
         let start = tokens
@@ -104,7 +104,7 @@ impl Error {
 }
 
 // https://docs.rs/syn/1.0/syn/type.Result.html
-type Result<TOk> = result::Result<TOk, Error>;
+type Result<T> = result::Result<T, Error>;
 
 fn parse_main_fn(tokens: TokenStream) -> Result<(TokenStream, TokenTree)> {
     let mut tokens = tokens.into_iter();

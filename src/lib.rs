@@ -56,15 +56,14 @@ use std::process;
 /// ```
 pub use quit_macros::main;
 
-#[derive(Copy, Clone)]
 #[must_use]
 struct ExitCode(i32);
 
 #[doc(hidden)]
 #[inline]
-pub fn __run<TMainFn, TReturn>(main_fn: TMainFn) -> TReturn
+pub fn __run<F, R>(main_fn: F) -> R
 where
-    TMainFn: FnOnce() -> TReturn + UnwindSafe,
+    F: FnOnce() -> R + UnwindSafe,
 {
     panic::catch_unwind(main_fn).unwrap_or_else(|payload| {
         if let Some(&ExitCode(exit_code)) = payload.downcast_ref() {

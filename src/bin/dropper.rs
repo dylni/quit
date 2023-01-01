@@ -8,6 +8,14 @@ fn exit(exit_code: i32) -> ! {
 #[allow(unreachable_code)]
 #[quit::main]
 fn main() {
+    struct Dropped();
+
+    impl Drop for Dropped {
+        fn drop(&mut self) {
+            println!("dropped");
+        }
+    }
+
     let _dropped = Dropped();
 
     let exit_code = env::args_os()
@@ -20,12 +28,4 @@ fn main() {
     exit(exit_code);
 
     println!("unreachable");
-
-    struct Dropped();
-
-    impl Drop for Dropped {
-        fn drop(&mut self) {
-            println!("dropped");
-        }
-    }
 }

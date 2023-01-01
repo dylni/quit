@@ -15,7 +15,7 @@ fn test(exit_code: i32) -> io::Result<()> {
 }
 
 #[test]
-fn test_dropper() -> io::Result<()> {
+fn test_simple() -> io::Result<()> {
     test(0)?;
     test(1)?;
     test(2)?;
