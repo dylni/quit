@@ -6,6 +6,7 @@
 //! [quit]: https://crates.io/crates/quit
 
 #![forbid(unsafe_code)]
+#![warn(unsafe_op_in_unsafe_fn)]
 #![warn(unused_results)]
 
 use std::iter;
@@ -38,7 +39,7 @@ impl TokenStreamExt for TokenStream {
 }
 
 fn path(module: &str, name: &str) -> impl Iterator<Item = TokenTree> {
-    vec![
+    [
         Punct::new(':', Spacing::Joint).into(),
         Punct::new(':', Spacing::Alone).into(),
         Ident::new(module, Span::call_site()).into(),

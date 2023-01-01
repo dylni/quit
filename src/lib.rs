@@ -9,12 +9,14 @@
 //! # Implementation
 //!
 //! Internally, this crate uses panicking to unwind the stack. Thus, if
-//! panicking is set to "abort" instead of the default "unwind", setting the
-//! exit status will not work correctly. Changing this option may become an
-//! error in the future, if it can be detected at compile time.
+//! panicking were set to "abort" instead of the default "unwind", setting the
+//! exit status would not work correctly. This crate will cause a compile error
+//! in that case, to avoid silent incorrect behavior. Further information can
+//! be found in the [Rustc Development Guide][panic_runtime].
 //!
 //! Additionally, the program will not exit if [`with_code`] is called from a
-//! spawned thread, unless panics are propagated from that thread.
+//! spawned thread, unless panics are propagated from that thread. However,
+//! propagating panics is usually recommended regardless.
 //!
 //! # Examples
 //!
@@ -35,9 +37,17 @@
 //! ```
 //!
 //! [attribute]: main
+//! [panic_runtime]: https://rustc-dev-guide.rust-lang.org/panic-implementation.html#step-2-the-panic-runtime
 
 #![forbid(unsafe_code)]
+#![warn(unsafe_op_in_unsafe_fn)]
 #![warn(unused_results)]
+
+#[cfg(not(panic = "unwind"))]
+compile_error!(
+    r#"Quit requires unwinding panics:
+https://docs.rs/quit/latest/quit/#implementation"#
+);
 
 use std::panic;
 use std::panic::UnwindSafe;
