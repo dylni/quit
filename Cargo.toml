@@ -20,7 +20,7 @@ rustc-args = ["--cfg", "quit_docs_rs"]
 rustdoc-args = ["--cfg", "quit_docs_rs"]
 
 [dependencies]
-quit_macros = { version = "=1.2.0", path = "macros" }
+quit_macros = { version = "=2.0.0", path = "macros" }
 
 [features]
 __unstable_tests = []
@@ -29,7 +29,7 @@ __unstable_tests = []
 members = ["macros"]
 
 [workspace.package]
-version = "1.2.0"
+version = "2.0.0"
 edition = "2021"
 rust-version = "1.64.0"
 repository = "https://github.com/dylni/quit"

@@ -16,7 +16,7 @@ Add the following lines to your "Cargo.toml" file:
 
 ```toml
 [dependencies]
-quit = "1.2"
+quit = "2.0"
 ```
 
 See the [documentation] for available functionality and examples.
@@ -32,7 +32,7 @@ crate's minor version:
 
 ```toml
 [dependencies]
-quit = "~1.2"
+quit = "~2.0"
 ```
 
 ## License
