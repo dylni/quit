@@ -3,7 +3,7 @@ name = "quit"
 version = "1.2.0"
 authors = ["dylni"]
 edition = "2021"
-rust-version = "1.60.0"
+rust-version = "1.61.0"
 description = """
 Exit cleanly with an exit code
 """
@@ -12,13 +12,18 @@ repository = "https://github.com/dylni/quit"
 license = "MIT OR Apache-2.0"
 keywords = ["exit", "code", "status", "die", "terminate"]
 categories = ["command-line-interface", "rust-patterns"]
-exclude = [".*", "tests.rs", "/rustfmt.toml", "/src/bin", "/tests"]
+exclude = [".*", "tests.rs", "/rustfmt.toml", "/src/bin", "/src/tests_common.rs", "/tests"]
 
 [package.metadata.docs.rs]
 all-features = true
+rustc-args = ["--cfg", "quit_docs_rs"]
+rustdoc-args = ["--cfg", "quit_docs_rs"]
 
 [dependencies]
 quit_macros = { version = "=1.2.0", path = "macros" }
+
+[features]
+__unstable_tests = []
 
 [workspace]
 members = ["macros"]

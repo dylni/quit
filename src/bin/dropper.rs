@@ -1,7 +1,7 @@
 use std::env;
 
 #[inline(never)]
-fn exit(exit_code: i32) -> ! {
+fn exit(exit_code: u8) -> ! {
     quit::with_code(exit_code);
 }
 

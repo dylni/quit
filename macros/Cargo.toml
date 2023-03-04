@@ -3,7 +3,7 @@ name = "quit_macros"
 version = "1.2.0"
 authors = ["dylni"]
 edition = "2021"
-rust-version = "1.60.0"
+rust-version = "1.61.0"
 description = """
 Procedural macros used by crate quit
 """

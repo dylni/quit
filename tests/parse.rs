@@ -1,11 +1,14 @@
-use std::mem::ManuallyDrop;
+#![cfg(feature = "__unstable_tests")]
+
+use quit::__Result;
+use quit::tests_common as common;
 
 #[test]
 fn test_empty() {
     #[quit::main]
     fn main() {}
 
-    main();
+    common::assert_result((), main());
 }
 
 #[test]
@@ -17,7 +20,7 @@ fn test_success() {
         }
     }
 
-    main();
+    common::assert_result((), main());
 }
 
 #[should_panic(expected = "hello world")]
@@ -28,7 +31,7 @@ fn test_panic() {
         panic!("hello world");
     }
 
-    main();
+    common::assert_result((), main());
 }
 
 #[test]
@@ -38,26 +41,24 @@ fn test_return() {
         Ok(())
     }
 
-    assert_eq!(Ok(()), main());
+    common::assert_result(Ok(()), main());
 }
 
 #[test]
-fn test_complex_signature() {
+const fn test_complex_signature() {
     mod main {
-        use std::mem::ManuallyDrop;
-
         #[quit::main]
         #[quit::main]
-        pub(super) unsafe extern "C" fn main<T: Copy>() -> ManuallyDrop<()>
-        where
-            T: Clone,
-        {
-            ManuallyDrop::new(())
+        pub(super) async unsafe extern "C" fn main(
+            _u1: u8,
+            _u2: u16,
+        ) -> Result<(), u32> {
+            Ok(())
         }
     }
 
-    // SAFETY: Nothing unsafe is used.
-    unsafe {
-        ManuallyDrop::drop(&mut main::main::<()>());
+    async fn _test_type() -> __Result<__Result<Result<(), u32>>> {
+        // SAFETY: Nothing unsafe is used.
+        unsafe { main::main(0, 0).await }
     }
 }

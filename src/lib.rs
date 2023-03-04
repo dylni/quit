@@ -1,6 +1,6 @@
 //! This crate allows cleanly exiting a program using a custom exit code,
 //! without the drawbacks of [`process::exit`]. Destructors will be called as
-//! usual, and the stack will be unwound to the main function.
+//! usual, and the stack will be completely unwound.
 //!
 //! It is always required to attach [`#[main]`][attribute] to the main
 //! function. Then, [`with_code`] can be called from almost anywhere in the
@@ -51,6 +51,11 @@ https://docs.rs/quit/latest/quit/#implementation"#
 use std::panic;
 use std::panic::UnwindSafe;
 use std::process;
+use std::process::Termination;
+
+#[cfg(all(feature = "__unstable_tests", not(quit_docs_rs)))]
+#[doc(hidden)]
+pub mod tests_common;
 
 /// Modifies the main function to exit with the code passed to [`with_code`].
 ///
@@ -65,21 +70,70 @@ use std::process;
 /// ```
 pub use quit_macros::main;
 
-#[must_use]
-struct ExitCode(i32);
+struct ExitCode(process::ExitCode);
+
+enum ResultInner<T>
+where
+    T: Termination,
+{
+    Result(T),
+    ExitCode(process::ExitCode),
+}
+
+#[doc(hidden)]
+pub struct __Result<T>(ResultInner<T>)
+where
+    T: Termination;
+
+impl<T> Termination for __Result<T>
+where
+    T: Termination,
+{
+    #[inline]
+    fn report(self) -> process::ExitCode {
+        use ResultInner as Inner;
+
+        match self.0 {
+            Inner::Result(result) => result.report(),
+            Inner::ExitCode(exit_code) => exit_code,
+        }
+    }
+}
 
 #[doc(hidden)]
 #[inline]
-pub fn __run<F, R>(main_fn: F) -> R
+pub fn __run<F, R>(main_fn: F) -> __Result<R>
 where
     F: FnOnce() -> R + UnwindSafe,
+    R: Termination,
 {
-    panic::catch_unwind(main_fn).unwrap_or_else(|payload| {
-        if let Some(&ExitCode(exit_code)) = payload.downcast_ref() {
-            process::exit(exit_code);
+    panic::catch_unwind(main_fn)
+        .map(|x| __Result(ResultInner::Result(x)))
+        .unwrap_or_else(|payload| {
+            if let Some(&ExitCode(exit_code)) = payload.downcast_ref() {
+                __Result(ResultInner::ExitCode(exit_code))
+            } else {
+                panic::resume_unwind(payload);
+            }
+        })
+}
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __main {
+    (
+        ( $($signature_token:tt)+ )
+        ( $($args_token:tt)* ) -> $return_type:ty { $($body_token:tt)* }
+    ) => {
+        $($signature_token)+ (
+            $($args_token)*
+        ) -> $crate::__Result<$return_type> {
+            $crate::__run(|| { $($body_token)* })
         }
-        panic::resume_unwind(payload);
-    })
+    };
+    ( $signature:tt $args:tt $body:tt ) => {
+        $crate::__main!($signature $args -> () $body);
+    }
 }
 
 /// Cleanly exits the program with an exit code.
@@ -105,6 +159,9 @@ where
 /// [attribute]: main
 /// [implementation]: self#implementation
 #[inline]
-pub fn with_code(exit_code: i32) -> ! {
-    panic::resume_unwind(Box::new(ExitCode(exit_code)));
+pub fn with_code<T>(exit_code: T) -> !
+where
+    T: Into<process::ExitCode>,
+{
+    panic::resume_unwind(Box::new(ExitCode(exit_code.into())));
 }

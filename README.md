@@ -2,7 +2,7 @@
 
 This crate allows cleanly exiting a program using a custom exit code, without
 the drawbacks of [`process::exit`]. Destructors will be called as usual, and
-the stack will be unwound to the main function.
+the stack will be completely unwound.
 
 It is always required to attach [`#[main]`][attribute] to the main function.
 Then, [`with_code`] can be called from almost anywhere in the program.
@@ -23,7 +23,7 @@ See the [documentation] for available functionality and examples.
 
 ## Rust version support
 
-The minimum supported Rust toolchain version is currently Rust 1.60.0.
+The minimum supported Rust toolchain version is currently Rust 1.61.0.
 
 Minor version updates may increase this version requirement. However, the
 previous two Rust releases will always be supported. If the minimum Rust

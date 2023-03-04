@@ -9,7 +9,6 @@
 #![warn(unused_results)]
 
 use std::iter;
-use std::iter::FromIterator;
 use std::result;
 
 use proc_macro::Delimiter;
@@ -37,7 +36,7 @@ impl TokenStreamExt for TokenStream {
     }
 }
 
-fn path(module: &str, name: &str) -> impl Iterator<Item = TokenTree> {
+fn macro_path(module: &str, name: &str) -> impl Iterator<Item = TokenTree> {
     [
         Punct::new(':', Spacing::Joint).into(),
         Punct::new(':', Spacing::Alone).into(),
@@ -45,6 +44,7 @@ fn path(module: &str, name: &str) -> impl Iterator<Item = TokenTree> {
         Punct::new(':', Spacing::Joint).into(),
         Punct::new(':', Spacing::Alone).into(),
         Ident::new(name, Span::call_site()).into(),
+        Punct::new('!', Spacing::Alone).into(),
     ]
     .into_iter()
 }
@@ -83,8 +83,7 @@ impl Error {
     }
 
     fn to_compile_error(self) -> TokenStream {
-        let mut result: TokenStream = path("std", "compile_error")
-            .chain(iter::once(Punct::new('!', Spacing::Alone).into()))
+        let mut result: TokenStream = macro_path("std", "compile_error")
             .map(|mut token| {
                 token.set_span(self.start);
                 token
@@ -106,60 +105,38 @@ impl Error {
 // https://docs.rs/syn/1.0/syn/type.Result.html
 type Result<T> = result::Result<T, Error>;
 
-fn parse_main_fn(tokens: TokenStream) -> Result<(TokenStream, TokenTree)> {
-    let mut tokens = tokens.into_iter();
+fn take_signature<I>(mut tokens: &mut I) -> Result<TokenStream>
+where
+    I: Iterator<Item = TokenTree>,
+{
     let mut signature = TokenStream::new();
 
-    loop {
-        let token = tokens.next().ok_or_else(|| {
-            Error::new(
-                Span::call_site(),
-                "`#[quit::main]` can only be attached to functions",
-            )
-        })?;
-
-        let found =
+    for token in &mut tokens {
+        let matched =
             matches!(&token, TokenTree::Ident(x) if x.to_string() == "fn");
         signature.push(token);
-        if found {
+        if matched {
             break;
         }
     }
 
-    if let Some(name) = tokens.next() {
-        if name.to_string() != "main" {
-            return Err(Error::new_spanned(
-                name,
-                "`#[quit::main]` can only be attached to `main`",
-            ));
-        }
-        signature.push(name);
+    let name = tokens.next().ok_or_else(|| {
+        Error::new(
+            Span::call_site(),
+            "`#[quit::main]` can only be attached to functions",
+        )
+    })?;
+    if !matches!(&name, TokenTree::Ident(x) if x.to_string() == "main") {
+        return Err(Error::new_spanned(
+            name,
+            "`#[quit::main]` can only be attached to `main`",
+        ));
     }
+    signature.push(name);
 
-    let body = loop {
-        let token = tokens.next().ok_or_else(|| {
-            Error::new(
-                Span::call_site(),
-                "`#[quit::main]` can only be attached to functions with a \
-                body",
-            )
-        })?;
-
-        if matches!(
-            &token,
-            TokenTree::Group(x) if x.delimiter() == Delimiter::Brace,
-        ) {
-            break token;
-        }
-        signature.push(token);
-    };
-
-    assert!(tokens.next().is_none());
-
-    Ok((signature, body))
+    Ok(signature)
 }
 
-#[inline]
 #[proc_macro_attribute]
 pub fn main(args: TokenStream, item: TokenStream) -> TokenStream {
     if !args.is_empty() {
@@ -167,23 +144,23 @@ pub fn main(args: TokenStream, item: TokenStream) -> TokenStream {
             .to_compile_error();
     }
 
-    let (mut result, body) = match parse_main_fn(item) {
-        Ok(result) => result,
-        Err(error) => return error.to_compile_error(),
-    };
-
-    let mut args = TokenStream::from_iter(vec![
-        TokenTree::Punct(Punct::new(
-            '|',
-            Spacing::Alone,
-        ));
-        2
-    ]);
-    args.push(body);
-
-    let mut body: TokenStream = path("quit", "__run").collect();
-    body.push(Group::new(Delimiter::Parenthesis, args));
-
-    result.push(Group::new(Delimiter::Brace, body));
-    result
+    let mut item = item.into_iter();
+    take_signature(&mut item)
+        .map(|signature| {
+            macro_path("quit", "__main")
+                .chain(iter::once(
+                    Group::new(
+                        Delimiter::Brace,
+                        iter::once(
+                            Group::new(Delimiter::Parenthesis, signature)
+                                .into(),
+                        )
+                        .chain(item)
+                        .collect(),
+                    )
+                    .into(),
+                ))
+                .collect()
+        })
+        .unwrap_or_else(Error::to_compile_error)
 }
