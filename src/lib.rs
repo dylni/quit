@@ -52,6 +52,8 @@ use std::panic;
 use std::panic::UnwindSafe;
 use std::process;
 use std::process::Termination;
+use std::sync::atomic;
+use std::sync::atomic::AtomicBool;
 
 #[cfg(all(feature = "__unstable_tests", not(quit_docs_rs)))]
 #[doc(hidden)]
@@ -119,6 +121,9 @@ where
 }
 
 #[doc(hidden)]
+pub static __ATTACHED: AtomicBool = AtomicBool::new(false);
+
+#[doc(hidden)]
 #[macro_export]
 macro_rules! __main {
     (
@@ -128,6 +133,10 @@ macro_rules! __main {
         $($signature_token)+ (
             $($args_token)*
         ) -> $crate::__Result<$return_type> {
+            $crate::__ATTACHED.store(
+                true,
+                ::std::sync::atomic::Ordering::Release,
+            );
             $crate::__run(|| { $($body_token)* })
         }
     };
@@ -149,11 +158,10 @@ macro_rules! __main {
 ///
 /// # Examples
 ///
-/// ```should_panic
+/// ```
 /// fn exit() -> ! {
 ///     quit::with_code(1);
 /// }
-/// # exit();
 /// ```
 ///
 /// [attribute]: main
@@ -163,5 +171,9 @@ pub fn with_code<T>(exit_code: T) -> !
 where
     T: Into<process::ExitCode>,
 {
+    assert!(
+        __ATTACHED.load(atomic::Ordering::Acquire),
+        "`#[quit::main]` has not been attached to `main`",
+    );
     panic::resume_unwind(Box::new(ExitCode(exit_code.into())));
 }
