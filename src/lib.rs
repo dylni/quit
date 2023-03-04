@@ -40,7 +40,6 @@
 //! [panic_runtime]: https://rustc-dev-guide.rust-lang.org/panic-implementation.html#step-2-the-panic-runtime
 
 #![forbid(unsafe_code)]
-#![warn(unsafe_op_in_unsafe_fn)]
 #![warn(unused_results)]
 
 #[cfg(not(panic = "unwind"))]

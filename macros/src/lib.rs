@@ -6,7 +6,6 @@
 //! [quit]: https://crates.io/crates/quit
 
 #![forbid(unsafe_code)]
-#![warn(unsafe_op_in_unsafe_fn)]
 #![warn(unused_results)]
 
 use std::iter;
