@@ -1,15 +1,15 @@
 [package]
 name = "quit"
-version = "1.2.0"
+version.workspace = true
 authors = ["dylni"]
-edition = "2021"
-rust-version = "1.61.0"
+edition.workspace = true
+rust-version.workspace = true
 description = """
 Exit cleanly with an exit code
 """
 readme = "README.md"
-repository = "https://github.com/dylni/quit"
-license = "MIT OR Apache-2.0"
+repository.workspace = true
+license.workspace = true
 keywords = ["exit", "code", "status", "die", "terminate"]
 categories = ["command-line-interface", "rust-patterns"]
 exclude = [".*", "tests.rs", "/rustfmt.toml", "/src/bin", "/src/tests_common.rs", "/tests"]
@@ -27,3 +27,10 @@ __unstable_tests = []
 
 [workspace]
 members = ["macros"]
+
+[workspace.package]
+version = "1.2.0"
+edition = "2021"
+rust-version = "1.64.0"
+repository = "https://github.com/dylni/quit"
+license = "MIT OR Apache-2.0"
