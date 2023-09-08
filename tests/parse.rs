@@ -47,6 +47,7 @@ fn test_return() {
 #[test]
 const fn test_complex_signature() {
     mod main {
+        #[allow(improper_ctypes_definitions)]
         #[quit::main]
         #[quit::main]
         pub(super) async unsafe extern "C" fn main(
