@@ -1,8 +1,8 @@
 use std::fmt::Debug;
 use std::process::Termination;
 
-use super::ResultInner;
 use super::__Result;
+use super::ResultInner;
 
 impl<T> __Result<T>
 where

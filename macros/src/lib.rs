@@ -82,7 +82,7 @@ impl Error {
         }
     }
 
-    fn to_compile_error(self) -> TokenStream {
+    fn into_compile_error(self) -> TokenStream {
         let mut result: TokenStream = macro_path("std", "compile_error")
             .map(|mut token| {
                 token.set_span(self.start);
@@ -141,7 +141,7 @@ where
 pub fn main(args: TokenStream, item: TokenStream) -> TokenStream {
     if !args.is_empty() {
         return Error::new_spanned(args, "arguments are not accepted")
-            .to_compile_error();
+            .into_compile_error();
     }
 
     let mut item = item.into_iter();
@@ -162,5 +162,5 @@ pub fn main(args: TokenStream, item: TokenStream) -> TokenStream {
                 ))
                 .collect()
         })
-        .unwrap_or_else(Error::to_compile_error)
+        .unwrap_or_else(Error::into_compile_error)
 }

@@ -8,7 +8,7 @@ It is always required to attach [`#[main]`][attribute] to the main function.
 Then, [`with_code`] can be called from almost anywhere in the program.
 Restrictions are noted in the documentation for that function.
 
-[![GitHub Build Status](https://github.com/dylni/quit/workflows/build/badge.svg?branch=master)](https://github.com/dylni/quit/actions?query=branch%3Amaster)
+[![GitHub Build Status](https://github.com/dylni/quit/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/dylni/quit/actions/workflows/build.yml?query=branch%3Amaster)
 
 ## Usage
 

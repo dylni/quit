@@ -130,7 +130,7 @@ macro_rules! __main {
         ( $($signature_token:tt)+ )
         ( $($args_token:tt)* ) -> $return_type:ty { $($body_token:tt)* }
     ) => {
-        $($signature_token)+ (
+        $($signature_token)+(
             $($args_token)*
         ) -> $crate::__Result<$return_type> {
             $crate::__ATTACHED.store(

@@ -8,8 +8,8 @@ fn test(exit_code: i32) -> io::Result<()> {
         .stderr(Stdio::inherit())
         .output()?;
 
-    assert_eq!(b"dropped\n", &*output.stdout);
     assert_eq!(Some(exit_code), output.status.code());
+    assert_eq!(b"dropped\n", &*output.stdout);
 
     Ok(())
 }
